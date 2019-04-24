@@ -120,7 +120,7 @@ function p2ms(a, opts) {
         }
         if (a.signatures) {
             if (a.signatures.length < o.m)
-                throw new TypeError('Not enough signatures provided');
+                console.warn('Not enough signatures provided');
             if (a.signatures.length > o.m)
                 throw new TypeError('Too many signatures provided');
         }

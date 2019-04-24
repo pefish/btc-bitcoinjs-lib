@@ -1,5 +1,5 @@
 {
-  "name": "bitcoinjs-lib",
+  "name": "btc-bitcoinjs-lib",
   "version": "5.0.2",
   "description": "Client-side Bitcoin JavaScript library",
   "main": "./src/index.js",
