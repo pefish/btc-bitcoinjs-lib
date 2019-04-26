@@ -119,6 +119,9 @@ export class Transaction {
 
     const tx = new Transaction();
     tx.version = readInt32();
+    if (tx.version === 12) {
+        tx.persentBlockHash = readSlice(32);
+    }
 
     const marker = buffer.readUInt8(offset);
     const flag = buffer.readUInt8(offset + 1);
@@ -183,6 +186,7 @@ export class Transaction {
   }
 
   version: number = 1;
+  persentBlockHash: Buffer | null = null;
   locktime: number = 0;
   ins: Input[] = [];
   outs: OpenOutput[] = [];
@@ -260,6 +264,9 @@ export class Transaction {
   clone(): Transaction {
     const newTx = new Transaction();
     newTx.version = this.version;
+    if (this.version === 12) {
+        newTx.persentBlockHash = this.persentBlockHash;
+    }
     newTx.locktime = this.locktime;
 
     newTx.ins = this.ins.map(txIn => {
@@ -469,6 +476,9 @@ export class Transaction {
 
     const input = this.ins[inIndex];
     writeUInt32(this.version);
+    if (this.version === 12 && this.persentBlockHash !== null) {
+      writeSlice(this.persentBlockHash);
+    }
     writeSlice(hashPrevouts);
     writeSlice(hashSequence);
     writeSlice(input.hash);
@@ -515,9 +525,11 @@ export class Transaction {
 
   private __byteLength(_ALLOW_WITNESS: boolean): number {
     const hasWitnesses = _ALLOW_WITNESS && this.hasWitnesses();
+    const hasPreBlockHash = ((this.version === 12) && (this.persentBlockHash != null))
 
     return (
       (hasWitnesses ? 10 : 8) +
+      (hasPreBlockHash ? 32 : 0) +
       varuint.encodingLength(this.ins.length) +
       varuint.encodingLength(this.outs.length) +
       this.ins.reduce((sum, input) => {
@@ -580,6 +592,9 @@ export class Transaction {
     }
 
     writeInt32(this.version);
+    if ((this.version === 12) && (this.persentBlockHash != null)) {
+        writeSlice(this.persentBlockHash);
+    }
 
     const hasWitnesses = _ALLOW_WITNESS && this.hasWitnesses();
 

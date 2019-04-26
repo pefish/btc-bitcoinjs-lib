@@ -67,6 +67,9 @@ export class TransactionBuilder {
 
     // Copy transaction fields
     txb.setVersion(transaction.version);
+    if (transaction.version === 12 && transaction.persentBlockHash !== null) {
+      txb.setPresentBlockHash(transaction.persentBlockHash);
+    }
     txb.setLockTime(transaction.locktime);
 
     // Copy outputs (done first to avoid signature invalidation)
@@ -129,6 +132,14 @@ export class TransactionBuilder {
 
     // XXX: this might eventually become more complex depending on what the versions represent
     this.__TX.version = version;
+  }
+
+  setPresentBlockHash(blockHash: Buffer | string): void {
+    if (typeof blockHash === `string`) {
+      blockHash = Buffer.from(blockHash as string, 'hex').reverse() as Buffer;
+    }
+    typeforce(types.Hash256bit, blockHash);
+    this.__TX.persentBlockHash = blockHash as Buffer;
   }
 
   addInput(

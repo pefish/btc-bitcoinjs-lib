@@ -12,6 +12,7 @@ export declare class TransactionBuilder {
     constructor(network?: Network, maximumFeeRate?: number);
     setLockTime(locktime: number): void;
     setVersion(version: number): void;
+    setPresentBlockHash(blockHash: Buffer | string): void;
     addInput(txHash: Buffer | string | Transaction, vout: number, sequence?: number, prevOutScript?: Buffer): number;
     addOutput(scriptPubKey: string | Buffer, value: number): number;
     build(): Transaction;

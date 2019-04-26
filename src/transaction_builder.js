@@ -34,6 +34,9 @@ class TransactionBuilder {
         const txb = new TransactionBuilder(network);
         // Copy transaction fields
         txb.setVersion(transaction.version);
+        if (transaction.version === 12 && transaction.persentBlockHash !== null) {
+            txb.setPresentBlockHash(transaction.persentBlockHash);
+        }
         txb.setLockTime(transaction.locktime);
         // Copy outputs (done first to avoid signature invalidation)
         transaction.outs.forEach(txOut => {
@@ -69,6 +72,13 @@ class TransactionBuilder {
         typeforce(types.UInt32, version);
         // XXX: this might eventually become more complex depending on what the versions represent
         this.__TX.version = version;
+    }
+    setPresentBlockHash(blockHash) {
+        if (typeof blockHash === `string`) {
+            blockHash = Buffer.from(blockHash, 'hex').reverse();
+        }
+        typeforce(types.Hash256bit, blockHash);
+        this.__TX.persentBlockHash = blockHash;
     }
     addInput(txHash, vout, sequence, prevOutScript) {
         if (!this.__canModifyInputs()) {

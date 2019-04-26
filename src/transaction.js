@@ -34,6 +34,7 @@ function isOutput(out) {
 class Transaction {
     constructor() {
         this.version = 1;
+        this.persentBlockHash = null;
         this.locktime = 0;
         this.ins = [];
         this.outs = [];
@@ -76,6 +77,9 @@ class Transaction {
         }
         const tx = new Transaction();
         tx.version = readInt32();
+        if (tx.version === 12) {
+            tx.persentBlockHash = readSlice(32);
+        }
         const marker = buffer.readUInt8(offset);
         const flag = buffer.readUInt8(offset + 1);
         let hasWitnesses = false;
@@ -171,6 +175,9 @@ class Transaction {
     clone() {
         const newTx = new Transaction();
         newTx.version = this.version;
+        if (this.version === 12) {
+            newTx.persentBlockHash = this.persentBlockHash;
+        }
         newTx.locktime = this.locktime;
         newTx.ins = this.ins.map(txIn => {
             return {
@@ -323,6 +330,9 @@ class Transaction {
         toffset = 0;
         const input = this.ins[inIndex];
         writeUInt32(this.version);
+        if (this.version === 12 && this.persentBlockHash !== null) {
+            writeSlice(this.persentBlockHash);
+        }
         writeSlice(hashPrevouts);
         writeSlice(hashSequence);
         writeSlice(input.hash);
@@ -361,7 +371,9 @@ class Transaction {
     }
     __byteLength(_ALLOW_WITNESS) {
         const hasWitnesses = _ALLOW_WITNESS && this.hasWitnesses();
+        const hasPreBlockHash = ((this.version === 12) && (this.persentBlockHash != null));
         return ((hasWitnesses ? 10 : 8) +
+            (hasPreBlockHash ? 32 : 0) +
             varuint.encodingLength(this.ins.length) +
             varuint.encodingLength(this.outs.length) +
             this.ins.reduce((sum, input) => {
@@ -408,6 +420,9 @@ class Transaction {
             vector.forEach(writeVarSlice);
         }
         writeInt32(this.version);
+        if ((this.version === 12) && (this.persentBlockHash != null)) {
+            writeSlice(this.persentBlockHash);
+        }
         const hasWitnesses = _ALLOW_WITNESS && this.hasWitnesses();
         if (hasWitnesses) {
             writeUInt8(Transaction.ADVANCED_TRANSACTION_MARKER);
