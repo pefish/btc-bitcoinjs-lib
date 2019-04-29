@@ -326,7 +326,11 @@ class Transaction {
             writeVarSlice(output.script);
             hashOutputs = bcrypto.hash256(tbuffer);
         }
-        tbuffer = Buffer.allocUnsafe(156 + varSliceSize(prevOutScript));
+        if (this.version === 12 && this.persentBlockHash !== null) {
+            tbuffer = Buffer.allocUnsafe(156 + this.persentBlockHash.length + varSliceSize(prevOutScript));
+        } else {
+            tbuffer = Buffer.allocUnsafe(156 + varSliceSize(prevOutScript));
+        }
         toffset = 0;
         const input = this.ins[inIndex];
         writeUInt32(this.version);
