@@ -328,7 +328,8 @@ class Transaction {
         }
         if (this.version === 12 && this.persentBlockHash !== null) {
             tbuffer = Buffer.allocUnsafe(156 + this.persentBlockHash.length + varSliceSize(prevOutScript));
-        } else {
+        }
+        else {
             tbuffer = Buffer.allocUnsafe(156 + varSliceSize(prevOutScript));
         }
         toffset = 0;
