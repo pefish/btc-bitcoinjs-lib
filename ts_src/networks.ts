@@ -48,7 +48,7 @@ export const testnet: Network = {
   wif: 0xef,
 };
 export const bitcoindiamond: Network = {
-    messagePrefix: '\x18BitcoinDiamond Signed Message:\\n',
+    messagePrefix: '\x18BitcoinDiamond Signed Message:\n',
     bech32: 'bc',
     bip32: {
         public: 0x0488b21e,
@@ -57,4 +57,26 @@ export const bitcoindiamond: Network = {
     pubKeyHash: 0x00,
     scriptHash: 0x05,
     wif: 0x80,
+};
+export const litecoin: Network = {
+  messagePrefix: '\x19Litecoin Signed Message:\n',
+  bech32: 'bc',
+  bip32: {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  pubKeyHash: 0x00,
+  scriptHash: 0x05,
+  wif: 0x80,
+};
+export const bitcoincash: Network = {
+  messagePrefix: '\x18Bitcoin Cash Signed Message:\n',
+  bech32: 'bc',
+  bip32: {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  pubKeyHash: 0x00,
+  scriptHash: 0x05,
+  wif: 0x80,
 };
