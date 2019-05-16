@@ -80,3 +80,14 @@ export const bitcoincash: Network = {
   scriptHash: 0x05,
   wif: 0x80,
 };
+export const vds: Network = {
+  messagePrefix: '\x18Vds Signed Message:\n',
+  bech32: 'vs',
+  bip32: {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  pubKeyHash: 0x1C, // guarantees the first 2 characters, when base58 encoded, are "Vc"
+  scriptHash: 0x41, // guarantees the first 2 characters, when base58 encoded, are "Vs"
+  wif: 0x80,
+};

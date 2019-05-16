@@ -75,7 +75,7 @@ function fromPrivateKey(buffer: Buffer, options?: ECPairOptions): ECPair {
   typeforce(types.Buffer256bit, buffer);
   if (!ecc.isPrivate(buffer))
     throw new TypeError('Private key not in range [1, n)');
-  typeforce(isOptions, options);
+  // typeforce(isOptions, options);
 
   return new ECPair(buffer, undefined, options as ECPairOptions);
 }

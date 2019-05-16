@@ -46,9 +46,16 @@ export function p2pkh(a: Payment, opts?: PaymentOpts): Payment {
   lazy.prop(o, 'address', () => {
     if (!o.hash) return;
 
-    const payload = Buffer.allocUnsafe(21);
-    payload.writeUInt8(network.pubKeyHash, 0);
-    o.hash.copy(payload, 1);
+    let pubkeyHashBuffer = Buffer.allocUnsafe(1);
+    if (network.pubKeyHash === 0) {
+      pubkeyHashBuffer.writeUInt8(0, 0);
+    } else {
+      pubkeyHashBuffer = Buffer.from(network.pubKeyHash.toString(16), 'hex');
+    }
+    const length = pubkeyHashBuffer.length;
+    const payload = Buffer.allocUnsafe(20 + length);
+    pubkeyHashBuffer.copy(payload, 0);
+    o.hash.copy(payload, length);
     return bs58check.encode(payload);
   });
   lazy.prop(o, 'hash', () => {
