@@ -87,7 +87,7 @@ export const vds: Network = {
     public: 0x0488b21e,
     private: 0x0488ade4,
   },
-  pubKeyHash: 0x1C, // guarantees the first 2 characters, when base58 encoded, are "Vc"
-  scriptHash: 0x41, // guarantees the first 2 characters, when base58 encoded, are "Vs"
+  pubKeyHash: 0x101C, // guarantees the first 2 characters, when base58 encoded, are "Vc"
+  scriptHash: 0x1041, // guarantees the first 2 characters, when base58 encoded, are "Vs"
   wif: 0x80,
 };
