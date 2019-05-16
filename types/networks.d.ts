@@ -16,4 +16,5 @@ export declare const testnet: Network;
 export declare const bitcoindiamond: Network;
 export declare const litecoin: Network;
 export declare const bitcoincash: Network;
+export declare const vds: Network;
 export {};

@@ -66,3 +66,14 @@ exports.bitcoincash = {
     scriptHash: 0x05,
     wif: 0x80,
 };
+exports.vds = {
+    messagePrefix: '\x18Vds Signed Message:\n',
+    bech32: 'vs',
+    bip32: {
+        public: 0x0488b21e,
+        private: 0x0488ade4,
+    },
+    pubKeyHash: 0x1C,
+    scriptHash: 0x41,
+    wif: 0x80,
+};
