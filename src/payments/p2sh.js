@@ -67,7 +67,11 @@ function p2sh(a, opts) {
             pubkeyHashBuffer.writeUInt8(0, 0);
         }
         else {
-            pubkeyHashBuffer = Buffer.from(network.scriptHash.toString(16), 'hex');
+            let temp = network.scriptHash.toString(16);
+            if (temp.length % 2 !== 0) {
+                temp = '0' + temp;
+            }
+            pubkeyHashBuffer = Buffer.from(temp, 'hex');
         }
         const length = pubkeyHashBuffer.length;
         const payload = Buffer.allocUnsafe(20 + length);

@@ -1,6 +1,6 @@
 {
-  "name": "btc-bitcoinjs-lib",
-  "version": "5.0.8",
+  "name": "@pefish/bitcoinjs-lib",
+  "version": "5.0.9",
   "description": "Client-side Bitcoin JavaScript library",
   "main": "./src/index.js",
   "types": "./types/index.d.ts",
