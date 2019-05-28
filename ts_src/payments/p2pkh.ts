@@ -50,7 +50,7 @@ export function p2pkh(a: Payment, opts?: PaymentOpts): Payment {
     if (network.pubKeyHash === 0) {
       pubkeyHashBuffer.writeUInt8(0, 0);
     } else {
-      let temp = network!.scriptHash.toString(16);
+      let temp = network!.pubKeyHash.toString(16);
       if (temp.length % 2 !== 0) {
         temp = '0' + temp;
       }

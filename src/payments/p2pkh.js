@@ -42,7 +42,7 @@ function p2pkh(a, opts) {
             pubkeyHashBuffer.writeUInt8(0, 0);
         }
         else {
-            let temp = network.scriptHash.toString(16);
+            let temp = network.pubKeyHash.toString(16);
             if (temp.length % 2 !== 0) {
                 temp = '0' + temp;
             }

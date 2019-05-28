@@ -1,6 +1,6 @@
 {
   "name": "@pefish/bitcoinjs-lib",
-  "version": "5.0.9",
+  "version": "5.2.0",
   "description": "Client-side Bitcoin JavaScript library",
   "main": "./src/index.js",
   "types": "./types/index.d.ts",
@@ -31,7 +31,8 @@
     "nobuild:unit": "mocha",
     "prettier": "prettier 'ts_src/**/*.ts' --ignore-path ./.prettierignore",
     "test": "npm run build && npm run format:ci && npm run lint && npm run nobuild:coverage",
-    "unit": "npm run build && npm run nobuild:unit"
+    "unit": "npm run build && npm run nobuild:unit",
+    "prepublish": "yarn build"
   },
   "repository": {
     "type": "git",
