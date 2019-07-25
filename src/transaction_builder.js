@@ -25,13 +25,15 @@ class TransactionBuilder {
     constructor(network = networks.bitcoin, maximumFeeRate = 2500) {
         this.network = network;
         this.maximumFeeRate = maximumFeeRate;
+        this.bitcoinCash = true;
         this.__PREV_TX_SET = {};
         this.__INPUTS = [];
         this.__TX = new transaction_1.Transaction();
         this.__TX.version = 2;
     }
-    static fromTransaction(transaction, network) {
+    static fromTransaction(transaction, network, bitcoinCashTx) {
         const txb = new TransactionBuilder(network);
+        txb.enableBitcoinCash(Boolean(bitcoinCashTx));
         // Copy transaction fields
         txb.setVersion(transaction.version);
         if (transaction.version === 12 && transaction.persentBlockHash !== null) {
@@ -48,13 +50,20 @@ class TransactionBuilder {
                 sequence: txIn.sequence,
                 script: txIn.script,
                 witness: txIn.witness,
+                value: txIn.value
             });
         });
         // fix some things not possible through the public API
         txb.__INPUTS.forEach((input, i) => {
-            fixMultisigOrder(input, transaction, i);
+            fixMultisigOrder(input, transaction, i, input.value, bitcoinCashTx);
         });
         return txb;
+    }
+    enableBitcoinCash(enable) {
+        if (typeof enable === 'undefined') {
+            enable = true;
+        }
+        this.bitcoinCash = enable;
     }
     setLockTime(locktime) {
         typeforce(types.UInt32, locktime);
@@ -153,11 +162,17 @@ class TransactionBuilder {
         }
         // ready to sign
         let signatureHash;
-        if (input.hasWitness) {
+        if (this.bitcoinCash) {
             signatureHash = this.__TX.hashForWitnessV0(vin, input.signScript, input.value, hashType);
+            signatureHash = this.__TX.hashForCashSignature(vin, input.signScript, witnessValue, hashType);
         }
         else {
-            signatureHash = this.__TX.hashForSignature(vin, input.signScript, hashType);
+            if (input.witness) {
+                signatureHash = this.__TX.hashForWitnessV0(vin, input.signScript, witnessValue, hashType);
+            }
+            else {
+                signatureHash = this.__TX.hashForSignature(vin, input.signScript, hashType);
+            }
         }
         // enforce in order signing of public keys
         const signed = input.pubkeys.some((pubKey, i) => {
@@ -417,7 +432,7 @@ function expandInput(scriptSig, witnessStack, type, scriptPubKey) {
     };
 }
 // could be done in expandInput, but requires the original Transaction for hashForSignature
-function fixMultisigOrder(input, transaction, vin) {
+function fixMultisigOrder(input, transaction, vin, value, bitcoinCash) {
     if (input.redeemScriptType !== SCRIPT_TYPES.P2MS || !input.redeemScript)
         return;
     if (input.pubkeys.length === input.signatures.length)
@@ -433,7 +448,18 @@ function fixMultisigOrder(input, transaction, vin) {
                 return false;
             // TODO: avoid O(n) hashForSignature
             const parsed = bscript.signature.decode(signature);
-            const hash = transaction.hashForSignature(vin, input.redeemScript, parsed.hashType);
+            var hash;
+            if (bitcoinCash) {
+                hash = transaction.hashForCashSignature(vin, input.signScript, value, parsed.hashType);
+            }
+            else {
+                if (input.witness) {
+                    hash = transaction.hashForWitnessV0(vin, input.signScript, value, parsed.hashType);
+                }
+                else {
+                    hash = transaction.hashForSignature(vin, input.signScript, parsed.hashType);
+                }
+            }
             // skip if signature does not match pubKey
             if (!keyPair.verify(hash, parsed.signature))
                 return false;

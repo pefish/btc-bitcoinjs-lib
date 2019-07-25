@@ -62,8 +62,10 @@ export class TransactionBuilder {
   static fromTransaction(
     transaction: Transaction,
     network?: Network,
+    bitcoinCashTx?: boolean,
   ): TransactionBuilder {
     const txb = new TransactionBuilder(network);
+    txb.enableBitcoinCash(Boolean(bitcoinCashTx))
 
     // Copy transaction fields
     txb.setVersion(transaction.version);
@@ -83,12 +85,13 @@ export class TransactionBuilder {
         sequence: txIn.sequence,
         script: txIn.script,
         witness: txIn.witness,
+        value: txIn.value
       });
     });
 
     // fix some things not possible through the public API
     txb.__INPUTS.forEach((input, i) => {
-      fixMultisigOrder(input, transaction, i);
+      fixMultisigOrder(input, transaction, i, input.value, bitcoinCashTx as boolean);
     });
 
     return txb;
@@ -97,6 +100,7 @@ export class TransactionBuilder {
   private __PREV_TX_SET: { [index: string]: boolean };
   private __INPUTS: TxbInput[];
   private __TX: Transaction;
+  private bitcoinCash: boolean = true;
 
   // WARNING: maximumFeeRate is __NOT__ to be relied on,
   //          it's just another potential safety mechanism (safety in-depth)
@@ -108,6 +112,14 @@ export class TransactionBuilder {
     this.__INPUTS = [];
     this.__TX = new Transaction();
     this.__TX.version = 2;
+  }
+
+  enableBitcoinCash(enable: boolean): void {
+    if (typeof enable === 'undefined') {
+      enable = true
+    }
+  
+    this.bitcoinCash = enable
   }
 
   setLockTime(locktime: number): void {
@@ -250,19 +262,20 @@ export class TransactionBuilder {
 
     // ready to sign
     let signatureHash: Buffer;
-    if (input.hasWitness) {
+    if (this.bitcoinCash) {
       signatureHash = this.__TX.hashForWitnessV0(
         vin,
         input.signScript as Buffer,
         input.value as number,
         hashType,
       );
+      signatureHash = this.__TX.hashForCashSignature(vin, input.signScript as Buffer, witnessValue as number, hashType)
     } else {
-      signatureHash = this.__TX.hashForSignature(
-        vin,
-        input.signScript as Buffer,
-        hashType,
-      );
+      if (input.witness) {
+        signatureHash = this.__TX.hashForWitnessV0(vin, input.signScript as Buffer, witnessValue as number, hashType)
+      } else {
+        signatureHash = this.__TX.hashForSignature(vin, input.signScript as Buffer, hashType)
+      }
     }
 
     // enforce in order signing of public keys
@@ -591,6 +604,8 @@ function fixMultisigOrder(
   input: TxbInput,
   transaction: Transaction,
   vin: number,
+  value: any,
+  bitcoinCash: boolean,
 ): void {
   if (input.redeemScriptType !== SCRIPT_TYPES.P2MS || !input.redeemScript)
     return;
@@ -609,11 +624,16 @@ function fixMultisigOrder(
 
       // TODO: avoid O(n) hashForSignature
       const parsed = bscript.signature.decode(signature);
-      const hash = transaction.hashForSignature(
-        vin,
-        input.redeemScript!,
-        parsed.hashType,
-      );
+      var hash
+      if (bitcoinCash) {
+        hash = transaction.hashForCashSignature(vin, input.signScript as Buffer, value, parsed.hashType)
+      } else {
+        if (input.witness) {
+          hash = transaction.hashForWitnessV0(vin, input.signScript as Buffer, value, parsed.hashType)
+        } else {
+          hash = transaction.hashForSignature(vin, input.signScript as Buffer, parsed.hashType)
+        }
+      }
 
       // skip if signature does not match pubKey
       if (!keyPair.verify(hash, parsed.signature)) return false;

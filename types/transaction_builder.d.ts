@@ -5,11 +5,13 @@ import { Transaction } from './transaction';
 export declare class TransactionBuilder {
     network: Network;
     maximumFeeRate: number;
-    static fromTransaction(transaction: Transaction, network?: Network): TransactionBuilder;
+    static fromTransaction(transaction: Transaction, network?: Network, bitcoinCashTx?: boolean): TransactionBuilder;
     private __PREV_TX_SET;
     private __INPUTS;
     private __TX;
+    private bitcoinCash;
     constructor(network?: Network, maximumFeeRate?: number);
+    enableBitcoinCash(enable: boolean): void;
     setLockTime(locktime: number): void;
     setVersion(version: number): void;
     setPresentBlockHash(blockHash: Buffer | string): void;
